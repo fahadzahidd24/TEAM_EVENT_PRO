@@ -5,7 +5,6 @@ import Input from '../../../components/Input'
 import { globalColors } from '../../../styles/globalColors'
 import Button from '../../../components/button'
 import { Dimensions } from 'react-native'
-import { Alert } from 'react-native'
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import PoliciesModel from '../../../components/Modal'
 
@@ -117,40 +116,6 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginVertical: 10,
-  },
-  forgotPassword: {
-    marginVertical: 10,
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-  },
-  forgotPasswordText: {
-    color: globalColors.buttonColor,
-    fontSize: 18,
-    fontFamily: 'Poppins_500Medium',
-    textDecorationLine: "underline",
-  },
-  orSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 27,
-  },
-  line: { flex: 1, height: 1, backgroundColor: globalColors.buttonColor },
-  orText: {
-    fontSize: 20,
-    fontFamily: 'Poppins_500Medium',
-    color: "#000000",
-    marginHorizontal: 15,
-  },
-  socialContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-  },
-  socialButton: {
-    marginHorizontal: 15
   },
   loginContainer: {
     width: "100%",
