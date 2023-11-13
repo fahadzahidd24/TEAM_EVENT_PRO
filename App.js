@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { globalColors } from './styles/globalColors';
 import { View } from 'react-native';
+import MainNavigation from './navigation/Main';
 
 
 export default function App() {
@@ -23,9 +24,10 @@ export default function App() {
           backgroundColor: globalColors.backgroundColor,
         }}
       >
-        <StatusBar backgroundColor='transparent' />
+        <StatusBar backgroundColor={globalColors.buttonColor} style='light' />
         <NavigationContainer>
           <StackNavigation />
+          {/* <MainNavigation /> */}
         </NavigationContainer>
       </SafeAreaView>
     );

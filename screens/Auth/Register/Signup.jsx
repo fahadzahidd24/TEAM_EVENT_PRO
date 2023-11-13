@@ -7,15 +7,22 @@ import Button from '../../../components/button'
 import { Dimensions } from 'react-native'
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import PoliciesModel from '../../../components/Modal'
+import Loader from '../../../components/loader'
+import axios from 'axios'
+import Alert from '../../../components/Alert'
+import AlertMessage from '../../../components/Alert'
 
 
 const height = Dimensions.get('window').height
 const Signup = ({ navigation }) => {
+  const [loading, setLoading] = useState(false);
   const [name, setname] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [CPassword, setCPassword] = useState('');
   const [agreement, setAgreement] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   const nameHandler = (text) => {
     setname(text);
@@ -30,10 +37,56 @@ const Signup = ({ navigation }) => {
     setCPassword(CPassword);
   }
 
+  const showAlert = () => {
+    setAlertVisible(true);
+  };
 
+  const hideAlert = () => {
+    setAlertVisible(false);
+  };
 
-  const SignupHandler = () => {
-    navigation.navigate("Verification")
+  const SignupHandler = async () => {
+    setLoading(true);
+    const userDetails = {
+      name: name,
+      phone: phone,
+      password: password,
+      CPassword: CPassword,
+      agreement: agreement
+    }
+
+    if (userDetails.name === '' || userDetails.phone === '' || userDetails.phone.length < 10 || userDetails.password === '' || userDetails.CPassword === '') {
+      hideAlert();
+      setAlertMessage('Please Enter Valid Details');
+      showAlert();
+      setLoading(false);
+      return;
+    }
+    else if (userDetails.password !== userDetails.CPassword) {
+      setAlertMessage('Password and Confirm Password not matched');
+      showAlert();
+      setLoading(false);
+      return;
+    }
+    else if (userDetails.agreement === false) {
+      setAlertMessage('Please Agree with Terms and Policies');
+      showAlert();
+      setLoading(false);
+      return;
+    }
+
+    else {
+      try {
+        const response = await axios.post('http://192.168.18.84:8080/api/register', userDetails);
+        setLoading(false);
+        navigation.navigate("Verification")
+      }
+      catch (err) {
+        setLoading(false);
+        setAlertMessage(err.response.data.message);
+      showAlert();
+      }
+    }
   }
 
   const loginHandler = () => {
@@ -55,6 +108,12 @@ const Signup = ({ navigation }) => {
         keyboardShouldPersistTaps="always"
         showsVerticalScrollIndicator={false}
       >
+        {loading && <Loader />}
+        <AlertMessage
+          visible={alertVisible}
+          message={alertMessage}
+          onPressOk={hideAlert}
+        />
         <View>
           <Text style={styles.title}>Signup</Text>
         </View>
@@ -62,13 +121,13 @@ const Signup = ({ navigation }) => {
           <Input icon='person' placeholder='Enter Your Name' onChangeText={nameHandler} value={name} />
         </View>
         <View style={styles.inputContainer}>
-          <Input icon='call' placeholder='Enter Your Phone Number' onChangeText={phoneHandler} value={phone} inputMode='numeric' defaultInput="(+92)" maxLength={10} />
+          <Input icon='call' placeholder='Phone Number' onChangeText={phoneHandler} value={phone} inputMode='numeric' defaultInput="(+92)" maxLength={10} />
         </View>
         <View style={styles.inputContainer}>
           <Input icon='lock-closed' placeholder='Enter Your Password' onChangeText={passwordHandler} value={password} secureTextEntry={true} eye={true} />
         </View>
         <View style={styles.inputContainer}>
-          <Input icon='call' placeholder='Confirm Password' onChangeText={CPasswordHandler} value={CPassword} secureTextEntry={true} eye={true} />
+          <Input icon='lock-closed' placeholder='Confirm Password' onChangeText={CPasswordHandler} value={CPassword} secureTextEntry={true} eye={true} />
         </View>
         <View style={[styles.inputContainer, styles.checkboxContainer]}>
           <BouncyCheckbox fillColor={globalColors.orange} onPress={(isChecked) => { isChecked ? setAgreement(true) : setAgreement(false) }} />
