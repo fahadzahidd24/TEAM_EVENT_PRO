@@ -6,97 +6,81 @@ import { globalColors } from '../../../styles/globalColors'
 import Button from '../../../components/button'
 import { Dimensions } from 'react-native'
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-import PoliciesModel from '../../../components/Modal'
 import Loader from '../../../components/loader'
 import axios from 'axios'
-import Alert from '../../../components/Alert'
 import AlertMessage from '../../../components/Alert'
 
 
 const height = Dimensions.get('window').height
 const Signup = ({ navigation }) => {
-  const [loading, setLoading] = useState(false);
-  const [name, setname] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [CPassword, setCPassword] = useState('');
-  const [agreement, setAgreement] = useState(false);
-  const [alertVisible, setAlertVisible] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
+  const [loading, setloading] = useState(false);
+  const [alertData, setAlertData] = useState({
+    alertVisible: false,
+    alertMessage: '',
+    error: false
+  });
 
-  const nameHandler = (text) => {
-    setname(text);
-  }
-  const phoneHandler = (phone) => {
-    setPhone(phone);
-  }
-  const passwordHandler = (password) => {
-    setPassword(password);
-  }
-  const CPasswordHandler = (CPassword) => {
-    setCPassword(CPassword);
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    password: '',
+    CPassword: '',
+    agreement: false,
+  })
+
+  const handleChange = (name, value) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+
   }
 
-  const showAlert = () => {
-    setAlertVisible(true);
+  const handleAlert = (message, error) => {
+    setAlertData({
+      alertVisible: true,
+      alertMessage: message,
+      error: error
+    });
   };
 
   const hideAlert = () => {
-    setAlertVisible(false);
+    setAlertData({
+      alertVisible: false,
+      alertMessage: '',
+    });
   };
 
   const SignupHandler = async () => {
-    setLoading(true);
-    const userDetails = {
-      name: name,
-      phone: phone,
-      password: password,
-      CPassword: CPassword,
-      agreement: agreement
-    }
-
-    if (userDetails.name === '' || userDetails.phone === '' || userDetails.phone.length < 10 || userDetails.password === '' || userDetails.CPassword === '') {
-      hideAlert();
-      setAlertMessage('Please Enter Valid Details');
-      showAlert();
-      setLoading(false);
-      return;
-    }
-    else if (userDetails.password !== userDetails.CPassword) {
-      setAlertMessage('Password and Confirm Password not matched');
-      showAlert();
-      setLoading(false);
-      return;
-    }
-    else if (userDetails.agreement === false) {
-      setAlertMessage('Please Agree with Terms and Policies');
-      showAlert();
-      setLoading(false);
-      return;
-    }
-
+    if (!formData.name)
+      return handleAlert("Please Enter Your Name");
+    else if (!formData.phone || formData.phone.length !== 10)
+      return handleAlert("Please Enter Valid Phone Number", true);
+    else if (!formData.password)
+      return handleAlert("Please Enter Your Password", true);
+    else if (formData.password.length < 6)
+      return handleAlert("Please Must be 6 Characters Long", true);
+    else if (!formData.CPassword)
+      return handleAlert("Please Confirm Your Password", true);
+    else if (formData.password !== formData.CPassword)
+      return handleAlert("Password and Confirm Password Must Be Same", true);
+    else if (!formData.agreement)
+      return handleAlert("Please Agree With Terms and Policies", true);
     else {
+      setloading(true);
       try {
-        const response = await axios.post('http://192.168.18.84:8080/api/register', userDetails);
-        setLoading(false);
-        navigation.navigate("Verification")
-      }
-      catch (err) {
-        setLoading(false);
-        setAlertMessage(err.response.data.message);
-      showAlert();
+        await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/register/checkNumber`, { phone: formData.phone });
+        navigation.navigate("Verification", { phone: formData.phone, password: formData.password, name: formData.name });
+      } catch (error) {
+        handleAlert(error.response.data.message, true);
+      } finally {
+        setloading(false);
       }
     }
   }
 
-  const loginHandler = () => {
-    navigation.navigate('Login')
-  }
 
 
-  const termsAndPoliciesHandler = () => {
-    <PoliciesModel modalVisible={true} />
-  }
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -110,29 +94,30 @@ const Signup = ({ navigation }) => {
       >
         {loading && <Loader />}
         <AlertMessage
-          visible={alertVisible}
-          message={alertMessage}
+          visible={alertData.alertVisible}
+          message={alertData.alertMessage}
+          error={alertData.error}
           onPressOk={hideAlert}
         />
         <View>
           <Text style={styles.title}>Signup</Text>
         </View>
         <View style={styles.inputContainer}>
-          <Input icon='person' placeholder='Enter Your Name' onChangeText={nameHandler} value={name} />
+          <Input icon='person' placeholder='Enter Your Name' name={'name'} handleChange={handleChange} value={formData.name} />
         </View>
         <View style={styles.inputContainer}>
-          <Input icon='call' placeholder='Phone Number' onChangeText={phoneHandler} value={phone} inputMode='numeric' defaultInput="(+92)" maxLength={10} />
+          <Input icon='call' placeholder='Phone Number' name='phone' handleChange={handleChange} value={formData.phone} inputMode='numeric' defaultInput="(+92)" maxLength={10} />
         </View>
         <View style={styles.inputContainer}>
-          <Input icon='lock-closed' placeholder='Enter Your Password' onChangeText={passwordHandler} value={password} secureTextEntry={true} eye={true} />
+          <Input icon='lock-closed' placeholder='Enter Your Password' name='password' handleChange={handleChange} value={formData.password} secureTextEntry={true} eye={true} />
         </View>
         <View style={styles.inputContainer}>
-          <Input icon='lock-closed' placeholder='Confirm Password' onChangeText={CPasswordHandler} value={CPassword} secureTextEntry={true} eye={true} />
+          <Input icon='lock-closed' placeholder='Confirm Password' name='CPassword' handleChange={handleChange} value={formData.CPassword} secureTextEntry={true} eye={true} />
         </View>
         <View style={[styles.inputContainer, styles.checkboxContainer]}>
-          <BouncyCheckbox fillColor={globalColors.orange} onPress={(isChecked) => { isChecked ? setAgreement(true) : setAgreement(false) }} />
+          <BouncyCheckbox fillColor={globalColors.orange} onPress={(isChecked) => { isChecked ? handleChange("agreement", true) : handleChange("agreement", false) }} />
           <Text style={styles.checkboxText}>I agree with </Text>
-          <Pressable onPress={termsAndPoliciesHandler}>
+          <Pressable >
             <Text style={styles.termsAndPolicies}>terms and policies</Text>
           </Pressable>
         </View>
@@ -144,7 +129,7 @@ const Signup = ({ navigation }) => {
         <View style={styles.signupContainer}>
           <Text style={styles.signUpText}>Already have an Account? </Text>
           <Pressable style={({ pressed }) => { opacity: pressed ? 0.7 : 1 }}
-            onPress={loginHandler}><Text style={styles.signUp}>Login</Text></Pressable>
+            onPress={() => navigation.navigate("Login")}><Text style={styles.signUp}>Login</Text></Pressable>
         </View>
       </ScrollView>
     </KeyboardAvoidingView >

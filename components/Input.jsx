@@ -5,7 +5,7 @@ import { globalColors } from '../styles/globalColors'
 import { Ionicons } from '@expo/vector-icons'
 import { Pressable } from 'react-native'
 
-const Input = ({ icon, placeholder, onChangeText, secureTextEntry, eye, value, inputMode, defaultInput, maxLength, editProfile, edit, editable }) => {
+const Input = ({ icon, placeholder, handleChange, secureTextEntry, eye, value, inputMode, defaultInput, maxLength, editProfile, edit, editable, name }) => {
     const [secureText, setSecureText] = useState(secureTextEntry);
     const [eyeIcon, setEyeIcon] = useState(eye ? 'eye-off' : '');
 
@@ -21,7 +21,7 @@ const Input = ({ icon, placeholder, onChangeText, secureTextEntry, eye, value, i
                     {defaultInput && (
                         <Text style={editProfile ? styles.defaultInputWhite : styles.defaultInput}>{defaultInput}</Text>
                     )}
-                    <TextInput style={editProfile ? styles.editInputText : styles.input} textAlignVertical='center' placeholder={placeholder} placeholderTextColor={editProfile ? globalColors.buttonColor : globalColors.textColor} selectionColor={globalColors.textColor} onChangeText={onChangeText} secureTextEntry={secureText ? true : false} value={value} inputMode={inputMode} maxLength={maxLength} editable={editable} />
+                    <TextInput style={editProfile ? styles.editInputText : styles.input} textAlignVertical='center' placeholder={placeholder} placeholderTextColor={editProfile ? globalColors.buttonColor : globalColors.textColor} selectionColor={globalColors.textColor} onChangeText={(text) => handleChange(name, text)} secureTextEntry={secureText ? true : false} value={value} inputMode={inputMode} maxLength={maxLength} editable={editable} />
                 </View>
                 {eye && (
                     <View style={styles.eyeContainer}>

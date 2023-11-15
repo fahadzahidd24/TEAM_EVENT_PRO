@@ -21,7 +21,7 @@ const ForgotPasswordStack = () => {
 
 const RegisterStack = () => {
     return (
-        <Stack.Navigator screenOptions={{ animation: 'slide_from_right', headerShown: false }}>
+        <Stack.Navigator screenOptions={{ animation: 'slide_from_right', headerShown: false }} initialRouteName='UserDetails' >
             <Stack.Screen name="Signup" component={Signup} />
             <Stack.Screen name="Verification" component={Verification} />
             <Stack.Screen name="UserDetails" component={UserDetails} />
