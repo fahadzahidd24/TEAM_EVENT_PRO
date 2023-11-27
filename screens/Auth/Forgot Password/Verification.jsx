@@ -27,7 +27,7 @@ const VerificationForgotPassword = ({ navigation }) => {
         Alert.alert("Resend", "Resend", [{ text: "Okay" }]);
     }
     const VerifyHandler = () => {
-        navigation.navigate('UserDetails')
+        navigation.navigate('Login')
     }
 
 

@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     inputContainer: {
         flexDirection: "row",
         alignItems: "center",
-        width: "85%",
+        width: "70%",
     },
     input: {
         color: globalColors.textColor,
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         backgroundColor: globalColors.buttonColor,
         width: 51,
-        maxWidht: 51,
+        maxWidth: 51,
         height: 30,
         maxHeight: 34,
         alignItems: 'center',

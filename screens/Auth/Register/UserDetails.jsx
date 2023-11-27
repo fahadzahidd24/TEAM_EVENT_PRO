@@ -8,6 +8,7 @@ import {
     Modal,
     Pressable,
     TouchableOpacity,
+    Alert,
 } from 'react-native';
 import Input from '../../../components/Input';
 import { globalColors } from '../../../styles/globalColors';
@@ -18,12 +19,25 @@ import Person from '../../../assets/Person.png';
 import { Ionicons } from '@expo/vector-icons';
 import { Camera, CameraType } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
+import Loader from '../../../components/loader';
+import AlertMessage from '../../../components/Alert';
+import axios from 'axios';
 
 const height = Dimensions.get('window').height;
 
 const UserDetails = ({ navigation, route }) => {
-    const [username, setUsername] = useState('');
+    const { phone, password, name } = route.params;
+    const [formData, setFormData] = useState({
+        username: ''
+    })
+    const [alertData, setAlertData] = useState({
+        alertVisible: false,
+        alertMessage: '',
+        error: false
+    });
+
     const cameraRef = useRef(null);
+    const [loading, setloading] = useState(false);
 
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
@@ -59,13 +73,12 @@ const UserDetails = ({ navigation, route }) => {
     const takePicture = async () => {
         if (cameraRef.current) {
             try {
-                const { uri } = await cameraRef.current.takePictureAsync({
+                const image = await cameraRef.current.takePictureAsync({
                     quality: 0.5,
-                    base64: true,
                 });
-                console.log('Photo URI:', uri);
+
                 setOpenCamera(false);
-                setSelectedImage(uri);
+                setSelectedImage(image.uri);
             } catch (error) {
                 console.error('Error taking picture:', error);
             }
@@ -73,12 +86,60 @@ const UserDetails = ({ navigation, route }) => {
     };
 
 
-    const usernameHandler = () => {
-        // Handle username input
+    const handleChange = (name, value) => {
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: value,
+        }));
+    }
+
+
+    const handleAlert = (message, error) => {
+        setAlertData({
+            alertVisible: true,
+            alertMessage: message,
+            error: error
+        });
     };
 
-    const ConfirmHandler = () => {
-        navigation.navigate('Login');
+    const hideAlert = () => {
+        setAlertData({
+            alertVisible: false,
+            alertMessage: '',
+        });
+    };
+
+    const ConfirmHandler = async () => {
+        if (!formData.username)
+            return handleAlert("Please Enter Username");
+        else {
+            setloading(true);
+            try {
+                const formData2 = new FormData();
+                formData2.append('photo', {
+                    uri: selectedImage,
+                    type: 'image/jpeg',
+                    name: 'photo.jpg',
+                });
+                formData2.append('username', formData.username.toLowerCase());
+                formData2.append('phone', phone);
+                formData2.append('password', password);
+                formData2.append('name', name);
+
+                const response = await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/register/registerUser`, formData2,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    });
+                if (response.status === 200)
+                    return navigation.replace("Login");
+            } catch (error) {
+                handleAlert(error.response.data.message, true);
+            } finally {
+                setloading(false);
+            }
+        }
     };
 
     return (
@@ -105,6 +166,14 @@ const UserDetails = ({ navigation, route }) => {
                     keyboardShouldPersistTaps="always"
                     showsVerticalScrollIndicator={false}
                 >
+
+                    {loading && <Loader />}
+                    <AlertMessage
+                        visible={alertData.alertVisible}
+                        message={alertData.alertMessage}
+                        error={alertData.error}
+                        onPressOk={hideAlert}
+                    />
                     <View style={styles.pictureContainer}>
                         <Image
                             source={selectedImage ? { uri: selectedImage } : Person}
@@ -118,8 +187,9 @@ const UserDetails = ({ navigation, route }) => {
                         <Input
                             icon="person"
                             placeholder="Enter Your Username"
-                            onChangeText={usernameHandler}
-                            value={username}
+                            name='username'
+                            handleChange={handleChange}
+                            value={formData.username}
                         />
                     </View>
 

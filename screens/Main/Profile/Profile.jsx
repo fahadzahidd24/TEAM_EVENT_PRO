@@ -10,12 +10,21 @@ import PoliciesModel from '../../../components/Modal'
 import { Image } from 'react-native'
 import ProfilePic from '../../../assets/ProfilePic.png'
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useDispatch, useSelector } from 'react-redux'
+import { setAuth } from '../../../store/auth-slice'
 
 const height = Dimensions.get('window').height
 const Profile = ({ navigation }) => {
-
+    const dispatch = useDispatch();
+    const user = useSelector((state) => state.auth.user);
     const editProfileHandler = () => {
         navigation.navigate('EditProfile')
+    }
+
+    const logoutHandler = async () => {
+        await AsyncStorage.clear();
+        dispatch(setAuth(false));
     }
 
     return (
@@ -24,12 +33,17 @@ const Profile = ({ navigation }) => {
                 <View style={styles.titleContainer}>
                     <Text style={styles.title}>Your Profile</Text>
                 </View>
-                <View>
-                    <Image source={ProfilePic} />
+                <View style={styles.profilePicContainer}>
+                    {
+                        !user.profilePicture ?
+                            <Image source={ProfilePic} />
+                            :
+                            <Image style={{ width: 150, height: 150 }} source={{ uri: user.profilePicture }} />
+                    }
                 </View>
                 <View style={styles.profileInfoContainer}>
-                    <Text style={styles.name}>Fahad Zahid</Text>
-                    <Text style={styles.phone}>(+92) 3174632874</Text>
+                    <Text style={styles.name}>{user.name}</Text>
+                    <Text style={styles.phone}>(+92) {user.phone}</Text>
                 </View>
                 <View style={styles.lineContainer} >
                     <View style={styles.line} />
@@ -41,7 +55,7 @@ const Profile = ({ navigation }) => {
                         <Ionicons name="pencil" size={24} color={globalColors.buttonColor} />
                         <Text style={styles.buttonText}>Edit Your Profile</Text>
                     </Pressable>
-                    <Pressable style={styles.button}>
+                    <Pressable style={styles.button} onPress={logoutHandler}>
                         <Ionicons name="log-out" size={24} color={globalColors.buttonColor} />
                         <Text style={styles.buttonText}>Logout</Text>
                     </Pressable>
@@ -117,5 +131,13 @@ const styles = StyleSheet.create({
         color: globalColors.buttonColor,
         marginLeft: 10,
         marginTop: 3
+    },
+    profilePicContainer: {
+        width: 150,
+        height: 150,
+        borderRadius: 75,
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden'
     }
 })

@@ -8,20 +8,71 @@ import Facebook from '../../../assets/Facebook.svg'
 import Button from '../../../components/button'
 import { Dimensions } from 'react-native'
 import { Alert } from 'react-native'
+import Loader from '../../../components/loader'
+import AlertMessage from '../../../components/Alert'
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useDispatch } from 'react-redux'
+import { setAuth } from '../../../store/auth-slice'
+
 const height = Dimensions.get('window').height
 const Login = ({ navigation }) => {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const dispatch = useDispatch();
+    const [loading, setloading] = useState(false);
+    const [formData, setFormData] = useState({
+        username: '',
+        password: '',
+    })
 
-    const usernameHandler = (text) => {
-        setUsername(text);
-    }
-    const passwordHandler = (pass) => {
-        setPassword(pass);
+    const [alertData, setAlertData] = useState({
+        alertVisible: false,
+        alertMessage: '',
+        error: false
+    });
+
+    const handleChange = (name, value) => {
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: value,
+        }));
     }
 
-    const LoginHandler = () => {
-        Alert.alert("Login", password, [{ text: "Okay" }]);
+    const handleAlert = (message, error) => {
+        setAlertData({
+            alertVisible: true,
+            alertMessage: message,
+            error: error
+        });
+    };
+
+    const hideAlert = () => {
+        setAlertData({
+            alertVisible: false,
+            alertMessage: '',
+        });
+    };
+
+
+
+    const LoginHandler = async () => {
+        if (!formData.username)
+            return handleAlert("Please Enter Username");
+        else if (!formData.password)
+            return handleAlert("Please Enter Your Password");
+        else {
+            setloading(true);
+            try {
+                formData.username = formData.username.toLowerCase();
+                const response = await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/login`, formData);
+                await AsyncStorage.setItem('token', response.data.token);
+                await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
+                dispatch(setAuth({ isAuth: true, user: response.data.user }));
+            } catch (error) {
+                handleAlert(error.response.data.message, true);
+            } finally {
+                setloading(false);
+            }
+        }
     }
 
     const signUpHandler = () => {
@@ -29,7 +80,7 @@ const Login = ({ navigation }) => {
     }
 
     const forgotPasswordHandler = () => {
-        navigation.navigate('ForgotPassword')
+        navigation.navigate('ForgotPasswordStack')
     }
     return (
         <KeyboardAvoidingView
@@ -42,14 +93,21 @@ const Login = ({ navigation }) => {
                 keyboardShouldPersistTaps="always"
                 showsVerticalScrollIndicator={false}
             >
+                {loading && <Loader />}
+                <AlertMessage
+                    visible={alertData.alertVisible}
+                    message={alertData.alertMessage}
+                    error={alertData.error}
+                    onPressOk={hideAlert}
+                />
                 <View>
                     <Text style={styles.title}>Login</Text>
                 </View>
                 <View style={styles.inputContainer}>
-                    <Input icon='person' placeholder='Enter Your Username' onChangeText={usernameHandler} value={username} />
+                    <Input icon='person' placeholder='Enter Your Username' name='username' handleChange={handleChange} value={formData.username} />
                 </View>
                 <View style={styles.inputContainer}>
-                    <Input icon='lock-closed' placeholder='Enter Your Password' onChangeText={passwordHandler} secureTextEntry={true} eye={true} value={password} />
+                    <Input icon='lock-closed' placeholder='Enter Your Password' secureTextEntry={true} eye={true} name='password' handleChange={handleChange} value={formData.password} />
                 </View>
                 <View style={styles.forgotPassword}>
                     <Pressable onPress={forgotPasswordHandler}>

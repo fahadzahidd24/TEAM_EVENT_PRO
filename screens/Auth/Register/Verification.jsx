@@ -170,7 +170,6 @@ const Verification = ({ navigation, route }) => {
 export default Verification;
 
 const styles = StyleSheet.create({
-    // ... other styles
     codeFieldRoot: { marginTop: 20 },
     cell: {
         width: 40,
