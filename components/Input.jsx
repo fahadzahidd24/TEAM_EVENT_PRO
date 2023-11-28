@@ -5,7 +5,7 @@ import { globalColors } from '../styles/globalColors'
 import { Ionicons } from '@expo/vector-icons'
 import { Pressable } from 'react-native'
 
-const Input = ({ icon, placeholder, handleChange, secureTextEntry, eye, value, inputMode, defaultInput, maxLength, editProfile, edit, editable, name }) => {
+const Input = ({ icon, placeholder, handleChange, secureTextEntry, eye, value, inputMode, defaultInput, maxLength, editProfile, edit, editable=true, name, onEditClick, grey }) => {
     const [secureText, setSecureText] = useState(secureTextEntry);
     const [eyeIcon, setEyeIcon] = useState(eye ? 'eye-off' : '');
 
@@ -19,9 +19,9 @@ const Input = ({ icon, placeholder, handleChange, secureTextEntry, eye, value, i
                 <View style={styles.inputContainer}>
                     <Ionicons name={icon} size={25} color={globalColors.textColor} />
                     {defaultInput && (
-                        <Text style={editProfile ? styles.defaultInputWhite : styles.defaultInput}>{defaultInput}</Text>
+                        <Text style={[editProfile ? styles.defaultInputWhite : styles.defaultInput, !editable && styles.greyColor]}>{defaultInput}</Text>
                     )}
-                    <TextInput style={editProfile ? styles.editInputText : styles.input} textAlignVertical='center' placeholder={placeholder} placeholderTextColor={editProfile ? globalColors.buttonColor : globalColors.textColor} selectionColor={globalColors.textColor} onChangeText={(text) => handleChange(name, text)} secureTextEntry={secureText ? true : false} value={value} inputMode={inputMode} maxLength={maxLength} editable={editable} />
+                    <TextInput style={[editProfile ? styles.editInputText : styles.input, !editable && styles.greyColor]} textAlignVertical='center' placeholder={placeholder} placeholderTextColor={editProfile ? globalColors.buttonColor : globalColors.textColor} selectionColor={globalColors.textColor} onChangeText={(text) => handleChange(name, text)} secureTextEntry={secureText ? true : false} value={value} inputMode={inputMode} maxLength={maxLength} editable={editable} />
                 </View>
                 {eye && (
                     <View style={styles.eyeContainer}>
@@ -31,9 +31,9 @@ const Input = ({ icon, placeholder, handleChange, secureTextEntry, eye, value, i
                     </View>
                 )
                 }
-                {edit && (
+                {(edit && !editable) && (
                     <View style={styles.editContainer}>
-                        <Pressable onPress={() => { }}>
+                        <Pressable onPress={onEditClick}>
                             <Text style={styles.editText}>Edit</Text>
                         </Pressable>
                     </View>
@@ -47,6 +47,9 @@ const Input = ({ icon, placeholder, handleChange, secureTextEntry, eye, value, i
 export default Input
 
 const styles = StyleSheet.create({
+    greyColor:{
+        color: "grey",
+    },  
     container: {
         backgroundColor: globalColors.buttonColor,
         borderRadius: 10,
