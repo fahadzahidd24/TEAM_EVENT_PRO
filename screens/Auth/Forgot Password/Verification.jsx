@@ -1,21 +1,32 @@
 import { KeyboardAvoidingView, ScrollView, StyleSheet, Text, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Pressable } from 'react-native'
 import { globalColors } from '../../../styles/globalColors'
 import Button from '../../../components/button'
 import { Dimensions } from 'react-native'
 import { Alert } from 'react-native'
+import axios from 'axios';
 import {
     CodeField,
     Cursor,
     useBlurOnFulfill,
     useClearByFocusCell,
 } from 'react-native-confirmation-code-field';
+import Loader from '../../../components/loader'
+import AlertMessage from '../../../components/Alert'
 
 const height = Dimensions.get('window').height
 const CELL_COUNT = 6;
 
-const VerificationForgotPassword = ({ navigation }) => {
+const VerificationForgotPassword = ({ navigation, route }) => {
+    const { email } = route.params;
+    const [loading, setloading] = useState(false);
+    const [alertData, setAlertData] = useState({
+        alertVisible: false,
+        alertMessage: '',
+        error: false
+    });
+
     const [value, setValue] = useState('');
     const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
     const [props, getCellOnLayoutHandler] = useClearByFocusCell({
@@ -23,12 +34,77 @@ const VerificationForgotPassword = ({ navigation }) => {
         setValue,
     });
 
-    const resendHandler = () => {
-        Alert.alert("Resend", "Resend", [{ text: "Okay" }]);
-    }
-    const VerifyHandler = () => {
-        navigation.navigate('Login')
-    }
+    const [timer, setTimer] = useState(59);
+
+    const startTimer = () => {
+        setTimer(59);
+    };
+
+    useEffect(() => {
+        let interval;
+        if (timer > 0) {
+            interval = setInterval(() => {
+                setTimer((prevTimer) => prevTimer - 1);
+            }, 1000);
+        } else {
+            clearInterval(interval);
+        }
+
+        return () => clearInterval(interval);
+    }, [timer]);
+
+    const resendHandler = async () => {
+        try {
+            setloading(true);
+            const response = await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/resendOTP`, { email })
+            if (response.status === 200) {
+                startTimer();
+                return;
+            }
+            else
+                return handleAlert(response?.data?.message, true);
+        } catch (error) {
+            handleAlert(error?.response?.data?.message || error.message, true);
+        } finally {
+            setloading(false);
+        }
+    };
+
+    const handleAlert = (message, error) => {
+        setAlertData({
+            alertVisible: true,
+            alertMessage: message,
+            error: error
+        });
+    };
+
+    const hideAlert = () => {
+        setAlertData({
+            alertVisible: false,
+            alertMessage: '',
+        });
+    };
+
+    const VerifyHandler = async () => {
+        if (value.length !== CELL_COUNT) {
+            return handleAlert('Please fill all the cells', false);
+        } else {
+            setloading(true);
+            try {
+                const response = await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/verifyOTP`, { email, otp: value.toString() })
+                if (response.status === 200) {
+                    return navigation.replace('NewPassword', { email });
+                }
+                else
+                    return handleAlert(response?.data?.message, true);
+            } catch (error) {
+                handleAlert(error?.response?.data?.message, true);
+            } finally {
+                setloading(false);
+            }
+        }
+
+    };
 
 
 
@@ -43,9 +119,16 @@ const VerificationForgotPassword = ({ navigation }) => {
                 keyboardShouldPersistTaps="always"
                 showsVerticalScrollIndicator={false}
             >
+                {loading && <Loader />}
+                <AlertMessage
+                    visible={alertData.alertVisible}
+                    message={alertData.alertMessage}
+                    error={alertData.error}
+                    onPressOk={hideAlert}
+                />
                 <View style={styles.titleContainer}>
                     <Text style={styles.title}>Enter Verification Code</Text>
-                    <Text style={styles.subText}>6-digit code sent to your phone</Text>
+                    <Text style={styles.subText}>6-digit code sent to your Email</Text>
                 </View>
                 <View style={styles.codeContainer}>
                     <CodeField
@@ -69,9 +152,21 @@ const VerificationForgotPassword = ({ navigation }) => {
                 </View>
 
                 <View style={styles.signupContainer}>
-                    <Text style={styles.signUpText}>Didn't get the code? </Text>
-                    <Pressable style={({ pressed }) => { opacity: pressed ? 0.7 : 1 }}
-                        onPress={resendHandler}><Text style={styles.signUp}>Resend</Text></Pressable>
+                    <View style={styles.signUpText}>
+                        <Text style={styles.signUpText2}>
+                            Didn't get the code?{' '}
+                        </Text>
+                        {timer > 0 ? (
+                            <Text style={styles.timerText}>{`Resend in ${timer} seconds`}</Text>
+                        ) : (
+                            <Pressable
+                                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                                onPress={resendHandler}
+                            >
+                                <Text style={styles.signUp}>Resend</Text>
+                            </Pressable>
+                        )}
+                    </View>
                 </View>
 
                 <View style={styles.loginContainer}>
@@ -153,6 +248,29 @@ const styles = StyleSheet.create({
     signUp: {
         fontSize: 16,
         fontFamily: 'Poppins_700Bold',
+        color: globalColors.buttonColor,
+    },
+    signUpText: {
+        fontSize: 16,
+        fontFamily: 'Poppins_500Medium',
+        color: globalColors.buttonColor,
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "row",
+    },
+    signUpText2: {
+        fontSize: 16,
+        fontFamily: 'Poppins_500Medium',
+        color: globalColors.buttonColor,
+    },
+    signUp: {
+        fontSize: 16,
+        fontFamily: 'Poppins_700Bold',
+        color: globalColors.buttonColor,
+    },
+    timerText: {
+        fontSize: 16,
+        fontFamily: 'Poppins_500Medium',
         color: globalColors.buttonColor,
     },
 

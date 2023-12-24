@@ -26,10 +26,7 @@ import axios from 'axios';
 const height = Dimensions.get('window').height;
 
 const UserDetails = ({ navigation, route }) => {
-    const { phone, password, name } = route.params;
-    const [formData, setFormData] = useState({
-        username: ''
-    })
+    const { email } = route.params;
     const [alertData, setAlertData] = useState({
         alertVisible: false,
         alertMessage: '',
@@ -40,7 +37,7 @@ const UserDetails = ({ navigation, route }) => {
     const [loading, setloading] = useState(false);
 
     const [modalVisible, setModalVisible] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedImage, setSelectedImage] = useState('');
     const [openCamera, setOpenCamera] = useState(false);
     const [type, setType] = useState(CameraType.back);
     const [permission, requestPermission] = Camera.useCameraPermissions();
@@ -110,35 +107,29 @@ const UserDetails = ({ navigation, route }) => {
     };
 
     const ConfirmHandler = async () => {
-        if (!formData.username)
-            return handleAlert("Please Enter Username");
-        else {
-            setloading(true);
-            try {
-                const formData2 = new FormData();
-                formData2.append('photo', {
-                    uri: selectedImage,
-                    type: 'image/jpeg',
-                    name: 'photo.jpg',
-                });
-                formData2.append('username', formData.username.toLowerCase());
-                formData2.append('phone', phone);
-                formData2.append('password', password);
-                formData2.append('name', name);
+        setloading(true);
+        try {
+            const formData2 = new FormData();
+            if(!selectedImage) throw new Error("Please select a profile picture");
+            formData2.append('photo', {
+                uri: selectedImage,
+                type: 'image/jpeg',
+                name: 'photo.jpg',
+            });
+            formData2.append('email', email);
 
-                const response = await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/register/registerUser`, formData2,
-                    {
-                        headers: {
-                            'Content-Type': 'multipart/form-data',
-                        },
-                    });
-                if (response.status === 200)
-                    return navigation.replace("Login");
-            } catch (error) {
-                handleAlert(error.response.data.message, true);
-            } finally {
-                setloading(false);
-            }
+            const response = await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/setUser`, formData2,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+            if (response.status === 200)
+                return navigation.replace("Login");
+        } catch (error) {
+            handleAlert(error?.response?.data?.message || error.message, true);
+        } finally {
+            setloading(false);
         }
     };
 
@@ -174,6 +165,9 @@ const UserDetails = ({ navigation, route }) => {
                         error={alertData.error}
                         onPressOk={hideAlert}
                     />
+                    <View>
+                        <Text style={styles.title}>Upload your profile Picture</Text>
+                    </View>
                     <View style={styles.pictureContainer}>
                         <Image
                             source={selectedImage ? { uri: selectedImage } : Person}
@@ -182,15 +176,6 @@ const UserDetails = ({ navigation, route }) => {
                         <Pressable style={styles.pencilCircle} onPress={() => setModalVisible(true)}>
                             <Ionicons name="pencil-sharp" size={25} color={globalColors.textColor} />
                         </Pressable>
-                    </View>
-                    <View style={styles.inputContainer}>
-                        <Input
-                            icon="person"
-                            placeholder="Enter Your Username"
-                            name='username'
-                            handleChange={handleChange}
-                            value={formData.username}
-                        />
                     </View>
 
                     <View style={styles.loginContainer}>
@@ -254,6 +239,12 @@ const styles = StyleSheet.create({
         marginVertical: 10,
         position: 'absolute',
         bottom: 20,
+    },
+    title: {
+        color: globalColors.buttonColor,
+        fontSize: 23,
+        marginBottom: 20,
+        fontFamily: 'Poppins_700Bold',
     },
     pencilCircle: {
         backgroundColor: globalColors.buttonColor,

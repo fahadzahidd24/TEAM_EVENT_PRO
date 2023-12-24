@@ -15,14 +15,14 @@ import { Modal } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import AlertMessage from '../../../components/Alert'
 import ConfirmationAlertMessage from '../../../components/ConfirmationAlert'
-import { setAuth, setProfilePicture } from '../../../store/auth-slice'
+import { setAuth, setProfilePicture, setUser } from '../../../store/auth-slice'
 import axios from 'axios'
 import Loader from '../../../components/loader'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const height = Dimensions.get('window').height
 const EditProfile = ({ navigation }) => {
-    const user = useSelector((state) => state.auth.user);
+    const { user } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const [alertData, setAlertData] = useState({
         alertVisible: false,
@@ -37,8 +37,8 @@ const EditProfile = ({ navigation }) => {
     const [editable, seteditable] = useState(false);
     const [permission, requestPermission] = Camera.useCameraPermissions();
     const [formData, setFormData] = useState({
-        name: user.name.toString(),
-        phone: user.phone.toString(),
+        name: user?.name?.toString(),
+        phone: user?.phone?.toString(),
         currentPassword: '',
         password: '',
         CPassword: '',
@@ -57,7 +57,7 @@ const EditProfile = ({ navigation }) => {
             alertVisible: false,
         });
         setSelectedImage(null);
-        dispatch(setProfilePicture(null));
+        dispatch(setUser({ profilePicture: null }));
     };
 
 
@@ -152,15 +152,15 @@ const EditProfile = ({ navigation }) => {
             setloading(true);
             try {
                 const formData2 = new FormData();
-                // if (selectedImage) {
-                //     formData2.append('photo', {
-                //         uri: selectedImage,
-                //         type: 'image/jpeg',
-                //         name: 'photo.jpg',
-                //     });
-                // } else {
-                //     formData2.append('photo', '88');
-                // }
+                if (selectedImage) {
+                    formData2.append('photo', {
+                        uri: selectedImage,
+                        type: 'image/jpeg',
+                        name: 'photo.jpg',
+                    });
+                } else {
+                    formData2.append('photo', '');
+                }
                 formData2.append('name', formData.name);
                 formData2.append('phone', formData.phone);
                 formData2.append('currentPassword', formData.currentPassword);
@@ -169,17 +169,17 @@ const EditProfile = ({ navigation }) => {
 
                 console.log(formData2);
                 const response = await axios.put(`${process.env.EXPO_PUBLIC_BASE_URL}/api/user/updateProfile`, formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                });
-                console.log(response.data.user)
-                await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
-                dispatch(setAuth({ isAuth: true, user: response.data.user }));
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    });
+                await AsyncStorage.setItem('user', JSON.stringify(response?.data?.user));
+                dispatch(setAuth(true));
+                dispatch(setUser(response?.data?.user));
                 navigation.goBack();
             } catch (error) {
-                return handleAlert2(error.response.data.message, true);
+                return handleAlert2(error?.response?.data?.message || error.message, true);
             } finally {
                 setloading(false);
             }

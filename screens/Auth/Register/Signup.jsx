@@ -22,7 +22,7 @@ const Signup = ({ navigation }) => {
 
   const [formData, setFormData] = useState({
     name: '',
-    phone: '',
+    email: '',
     password: '',
     CPassword: '',
     agreement: false,
@@ -54,8 +54,8 @@ const Signup = ({ navigation }) => {
   const SignupHandler = async () => {
     if (!formData.name)
       return handleAlert("Please Enter Your Name");
-    else if (!formData.phone || formData.phone.length !== 10)
-      return handleAlert("Please Enter Valid Phone Number", true);
+    else if (!formData.email)
+      return handleAlert("Please Enter Valid Email", true);
     else if (!formData.password)
       return handleAlert("Please Enter Your Password", true);
     else if (formData.password.length < 6)
@@ -69,10 +69,16 @@ const Signup = ({ navigation }) => {
     else {
       setloading(true);
       try {
-        await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/register/checkNumber`, { phone: formData.phone });
-        navigation.navigate("Verification", { phone: formData.phone, password: formData.password, name: formData.name });
+        const formData2 = {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }
+        console.log(formData2);
+        await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/register`, formData2);
+        navigation.navigate("Verification", { email: formData.email });
       } catch (error) {
-        handleAlert(error.response.data.message, true);
+        handleAlert(error?.response?.data?.message || error.message, true);
       } finally {
         setloading(false);
       }
@@ -106,7 +112,7 @@ const Signup = ({ navigation }) => {
           <Input icon='person' placeholder='Enter Your Name' name={'name'} handleChange={handleChange} value={formData.name} />
         </View>
         <View style={styles.inputContainer}>
-          <Input icon='call' placeholder='Phone Number' name='phone' handleChange={handleChange} value={formData.phone} inputMode='numeric' defaultInput="(+92)" maxLength={10} />
+          <Input icon='mail' placeholder='Email' name='email' handleChange={handleChange} value={formData.email} />
         </View>
         <View style={styles.inputContainer}>
           <Input icon='lock-closed' placeholder='Enter Your Password' name='password' handleChange={handleChange} value={formData.password} secureTextEntry={true} eye={true} />

@@ -11,14 +11,13 @@ const authSlice = createSlice({
     initialState,
     reducers: {
         setAuth: (state, action) => {
-            state.isAuth = action.payload.isAuth;
-            state.user = action.payload.user;
+            state.isAuth = action.payload;
         },
-        setProfilePicture: (state, action) => {
-            state.user.profilePicture = action.payload;
-        }
+        setUser: (state, action) => {
+            state.user = action.payload;
+        },
     },
 });
 
-export const { setAuth, setProfilePicture } = authSlice.actions;
+export const { setAuth, setUser } = authSlice.actions;
 export default authSlice.reducer;

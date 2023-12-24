@@ -13,14 +13,14 @@ import AlertMessage from '../../../components/Alert'
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useDispatch } from 'react-redux'
-import { setAuth } from '../../../store/auth-slice'
+import { setAuth, setUser } from '../../../store/auth-slice'
 
 const height = Dimensions.get('window').height
 const Login = ({ navigation }) => {
     const dispatch = useDispatch();
     const [loading, setloading] = useState(false);
     const [formData, setFormData] = useState({
-        username: '',
+        email: '',
         password: '',
     })
 
@@ -55,20 +55,20 @@ const Login = ({ navigation }) => {
 
 
     const LoginHandler = async () => {
-        if (!formData.username)
-            return handleAlert("Please Enter Username");
+        if (!formData.email)
+            return handleAlert("Please Enter Email");
         else if (!formData.password)
             return handleAlert("Please Enter Your Password");
         else {
             setloading(true);
             try {
-                formData.username = formData.username.toLowerCase();
                 const response = await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/login`, formData);
-                await AsyncStorage.setItem('token', response.data.token);
-                await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
-                dispatch(setAuth({ isAuth: true, user: response.data.user }));
+                await AsyncStorage.setItem('token', response?.data?.token);
+                await AsyncStorage.setItem('user', JSON.stringify(response?.data?.user));
+                dispatch(setAuth(true));
+                dispatch(setUser(response?.data?.user));
             } catch (error) {
-                handleAlert(error.response.data.message, true);
+                handleAlert(error?.response?.data?.message || error.message, true);
             } finally {
                 setloading(false);
             }
@@ -104,7 +104,7 @@ const Login = ({ navigation }) => {
                     <Text style={styles.title}>Login</Text>
                 </View>
                 <View style={styles.inputContainer}>
-                    <Input icon='person' placeholder='Enter Your Username' name='username' handleChange={handleChange} value={formData.username} />
+                    <Input icon='mail' placeholder='Enter Your Email' name='email' handleChange={handleChange} value={formData.email} />
                 </View>
                 <View style={styles.inputContainer}>
                     <Input icon='lock-closed' placeholder='Enter Your Password' secureTextEntry={true} eye={true} name='password' handleChange={handleChange} value={formData.password} />
@@ -114,7 +114,7 @@ const Login = ({ navigation }) => {
                         <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
                     </Pressable>
                 </View>
-                <View style={styles.orSection}>
+                {/* <View style={styles.orSection}>
                     <View style={styles.line} />
                     <View>
                         <Text style={styles.orText}>or</Text>
@@ -128,7 +128,7 @@ const Login = ({ navigation }) => {
                     <Pressable style={styles.socialButton}>
                         <Facebook height={30} width={30} />
                     </Pressable>
-                </View>
+                </View> */}
                 <View style={styles.loginContainer}>
                     <Button onPress={LoginHandler}>Login</Button>
                 </View>

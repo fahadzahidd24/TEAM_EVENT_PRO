@@ -19,8 +19,9 @@ import Chat from '../screens/Main/Inbox/Chat';
 import CalendarScreen from '../screens/Main/Calendar/Calendar';
 import { useDispatch, useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { setAuth } from '../store/auth-slice';
+import { setAuth, setUser } from '../store/auth-slice';
 import Loader from '../components/loader';
+import NewPassword from '../screens/Auth/Forgot Password/newPassword';
 
 const BottomTabs = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -133,6 +134,7 @@ const ForgotPasswordStack = () => {
         <Stack.Navigator screenOptions={{ animation: 'slide_from_right', headerShown: false }}>
             <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
             <Stack.Screen name="VerificationForgotPassword" component={VerificationForgotPassword} />
+            <Stack.Screen name="NewPassword" component={NewPassword} />
         </Stack.Navigator>
     );
 };
@@ -158,7 +160,8 @@ const StackNavigation = () => {
             let user = await AsyncStorage.getItem('user');
             user = JSON.parse(user);
             if (token && user) {
-                dispatch(setAuth({isAuth: true, user: user }));
+                dispatch(setAuth(true));
+                dispatch(setUser(user));
             }
             setAuthState(true);
         }

@@ -12,7 +12,7 @@ const height = Dimensions.get('window').height;
 const CELL_COUNT = 6;
 
 const Verification = ({ navigation, route }) => {
-    const { phone, password, name } = route.params;
+    const { email } = route.params;
     const [loading, setloading] = useState(false);
     const [value, setValue] = useState('');
     const [alertData, setAlertData] = useState({
@@ -47,15 +47,16 @@ const Verification = ({ navigation, route }) => {
 
     const resendHandler = async() => {
         try {
-            startTimer();
-            const response = await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/register/resendOTP`, { phone, otp: value })
+            setloading(true);
+            const response = await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/resendOTP`, { email })
             if (response.status === 200) {
+                startTimer();
                 return;
             }
             else
-                return handleAlert(response.data.message, true);
+                return handleAlert(response?.data?.message, true);
         } catch (error) {
-            handleAlert(error.response.data.message, true);
+            handleAlert(error?.response?.data?.message || error.message, true);
         } finally {
             setloading(false);
         }
@@ -67,14 +68,15 @@ const Verification = ({ navigation, route }) => {
         } else {
             setloading(true);
             try {
-                const response = await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/register/verifyOTP`, { phone, otp: value })
+                console.log(value);
+                const response = await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/verifyOTP`, { email, otp: value.toString() })
                 if (response.status === 200) {
-                    return navigation.replace('UserDetails', { phone, password, name });
+                    return navigation.replace('UserDetails', { email });
                 }
                 else
-                    return handleAlert(response.data.message, true);
+                    return handleAlert(response?.data?.message, true);
             } catch (error) {
-                handleAlert(error.response.data.message, true);
+                handleAlert(error?.response?.data?.message, true);
             } finally {
                 setloading(false);
             }
@@ -117,7 +119,7 @@ const Verification = ({ navigation, route }) => {
                 />
                 <View style={styles.titleContainer}>
                     <Text style={styles.title}>Enter Verification Code</Text>
-                    <Text style={styles.subText}>6-digit code sent to your phone</Text>
+                    <Text style={styles.subText}>6-digit code sent to your email</Text>
                 </View>
                 <View style={styles.codeContainer}>
                     <CodeField

@@ -17,7 +17,7 @@ import { setAuth } from '../../../store/auth-slice'
 const height = Dimensions.get('window').height
 const Profile = ({ navigation }) => {
     const dispatch = useDispatch();
-    const user = useSelector((state) => state.auth.user);
+    const { user } = useSelector((state) => state.auth);
     const editProfileHandler = () => {
         navigation.navigate('EditProfile')
     }
