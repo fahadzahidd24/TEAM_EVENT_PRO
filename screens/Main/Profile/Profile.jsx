@@ -43,7 +43,7 @@ const Profile = ({ navigation }) => {
                 </View>
                 <View style={styles.profileInfoContainer}>
                     <Text style={styles.name}>{user.name}</Text>
-                    <Text style={styles.phone}>(+92) {user.phone}</Text>
+                    <Text style={styles.phone}>{user.email}</Text>
                 </View>
                 <View style={styles.lineContainer} >
                     <View style={styles.line} />

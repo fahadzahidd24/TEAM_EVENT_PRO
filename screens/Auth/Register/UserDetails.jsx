@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     KeyboardAvoidingView,
     ScrollView,
@@ -27,6 +27,7 @@ const height = Dimensions.get('window').height;
 
 const UserDetails = ({ navigation, route }) => {
     const { email } = route.params;
+    // const email = ""
     const [alertData, setAlertData] = useState({
         alertVisible: false,
         alertMessage: '',
@@ -40,8 +41,14 @@ const UserDetails = ({ navigation, route }) => {
     const [selectedImage, setSelectedImage] = useState('');
     const [openCamera, setOpenCamera] = useState(false);
     const [type, setType] = useState(CameraType.back);
-    const [permission, requestPermission] = Camera.useCameraPermissions();
+    const [hasPermission, setHasPermission] = useState(null);
 
+    useEffect(() => {
+        (async () => {
+            const { status } = await Camera.requestCameraPermissionsAsync();
+            setHasPermission(status === 'granted');
+        })();
+    }, []);
 
     function toggleCameraType() {
         setType(current => (current === CameraType.back ? CameraType.front : CameraType.back));
@@ -49,7 +56,8 @@ const UserDetails = ({ navigation, route }) => {
 
     const takePictureAsync = async () => {
         setModalVisible(false);
-        setOpenCamera(true);
+        if (hasPermission)
+            setOpenCamera(true);
     }
 
 
@@ -83,13 +91,6 @@ const UserDetails = ({ navigation, route }) => {
     };
 
 
-    const handleChange = (name, value) => {
-        setFormData((prevFormData) => ({
-            ...prevFormData,
-            [name]: value,
-        }));
-    }
-
 
     const handleAlert = (message, error) => {
         setAlertData({
@@ -110,7 +111,7 @@ const UserDetails = ({ navigation, route }) => {
         setloading(true);
         try {
             const formData2 = new FormData();
-            if(!selectedImage) throw new Error("Please select a profile picture");
+            if (!selectedImage) throw new Error("Please select a profile picture");
             formData2.append('photo', {
                 uri: selectedImage,
                 type: 'image/jpeg',
@@ -118,7 +119,7 @@ const UserDetails = ({ navigation, route }) => {
             });
             formData2.append('email', email);
 
-            const response = await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/setUser`, formData2,
+            const response = await axios.post(`https://teamevent-pro-backend.vercel.app/api/setUser`, formData2,
                 {
                     headers: {
                         'Content-Type': 'multipart/form-data',

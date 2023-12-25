@@ -4,12 +4,12 @@
     "slug": "TEAM_EVENT_PRO",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#FDF6EB"
+      "backgroundColor": "#2e323b"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -19,9 +19,14 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FDF6EB"
-      }
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#2e323b"
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA"
+      ],
+      "package": "com.fahadzahidd24.TEAM_EVENT_PRO"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -36,12 +41,17 @@
           "photosPermission": "This app needs access to your gallery."
         }
       ],
-       [
+      [
         "expo-camera",
         {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera."
+          "cameraPermission": "This app needs access to your camera."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "9bbc0253-b8f4-4726-8602-e27d801c4f1d"
+      }
+    }
   }
 }

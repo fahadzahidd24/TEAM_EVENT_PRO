@@ -1,5 +1,5 @@
 import { KeyboardAvoidingView, ScrollView, StyleSheet, Text, View } from 'react-native'
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Pressable } from 'react-native'
 import { globalColors } from '../../../styles/globalColors'
 import Button from '../../../components/button'
@@ -14,8 +14,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Modal } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import AlertMessage from '../../../components/Alert'
-import ConfirmationAlertMessage from '../../../components/ConfirmationAlert'
-import { setAuth, setProfilePicture, setUser } from '../../../store/auth-slice'
+import { setAuth, setUser } from '../../../store/auth-slice'
 import axios from 'axios'
 import Loader from '../../../components/loader'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -23,6 +22,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 const height = Dimensions.get('window').height
 const EditProfile = ({ navigation }) => {
     const { user } = useSelector((state) => state.auth);
+    console.log(user.profilePicture);
     const dispatch = useDispatch();
     const [alertData, setAlertData] = useState({
         alertVisible: false,
@@ -31,18 +31,26 @@ const EditProfile = ({ navigation }) => {
     const cameraRef = useRef(null);
     const [loading, setloading] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(user.profilePicture ? user.profilePicture : null);
+    const [selectedImage, setSelectedImage] = useState(user.profilePicture);
     const [openCamera, setOpenCamera] = useState(false);
     const [type, setType] = useState(CameraType.back);
     const [editable, seteditable] = useState(false);
-    const [permission, requestPermission] = Camera.useCameraPermissions();
     const [formData, setFormData] = useState({
         name: user?.name?.toString(),
-        phone: user?.phone?.toString(),
+        email: user?.email.toString(),
         currentPassword: '',
         password: '',
         CPassword: '',
     })
+    const [hasPermission, setHasPermission] = useState(null);
+
+    useEffect(() => {
+        (async () => {
+            const { status } = await Camera.requestCameraPermissionsAsync();
+            setHasPermission(status === 'granted');
+        })();
+    }, []);
+
 
     const handleChange = (name, value) => {
         setFormData((prevFormData) => ({
@@ -51,14 +59,6 @@ const EditProfile = ({ navigation }) => {
         }));
 
     }
-
-    const handleConfirmation = () => {
-        setAlertData({
-            alertVisible: false,
-        });
-        setSelectedImage(null);
-        dispatch(setUser({ profilePicture: null }));
-    };
 
 
     function toggleCameraType() {
@@ -100,20 +100,6 @@ const EditProfile = ({ navigation }) => {
         }
     };
 
-    const handleAlert = (message) => {
-        setAlertData({
-            alertVisible: true,
-            alertMessage: message,
-        });
-    };
-
-    const hideAlert = () => {
-        setAlertData({
-            alertVisible: false,
-            alertMessage: '',
-        });
-    };
-
     const handleAlert2 = (message, error) => {
         setAlertData2({
             alertVisible: true,
@@ -138,8 +124,8 @@ const EditProfile = ({ navigation }) => {
     const updateHandler = async () => {
         if (!formData.name)
             return handleAlert2("Please Enter Your Name");
-        else if (!formData.phone || formData.phone.length !== 10)
-            return handleAlert2("Please Enter Valid Phone Number", true);
+        else if (!formData.email)
+            return handleAlert2("Please Enter Valid Email Address", true);
         else if (formData.password && !formData.currentPassword)
             return handleAlert2("Please Enter Your Current Password", true);
         else if (!formData.password && formData.currentPassword)
@@ -152,28 +138,24 @@ const EditProfile = ({ navigation }) => {
             setloading(true);
             try {
                 const formData2 = new FormData();
-                if (selectedImage) {
-                    formData2.append('photo', {
-                        uri: selectedImage,
-                        type: 'image/jpeg',
-                        name: 'photo.jpg',
-                    });
-                } else {
-                    formData2.append('photo', '');
-                }
+                formData2.append('photo', {
+                    uri: selectedImage,
+                    type: 'image/jpeg',
+                    name: 'photo.jpg',
+                });
                 formData2.append('name', formData.name);
-                formData2.append('phone', formData.phone);
+                formData2.append('email', formData.email);
                 formData2.append('currentPassword', formData.currentPassword);
                 formData2.append('password', formData.password);
                 formData2.append('CPassword', formData.CPassword);
 
-                console.log(formData2);
-                const response = await axios.put(`${process.env.EXPO_PUBLIC_BASE_URL}/api/user/updateProfile`, formData,
+                const response = await axios.put(`${process.env.EXPO_PUBLIC_BASE_URL}/api/user/updateProfile`, formData2,
                     {
                         headers: {
                             'Content-Type': 'multipart/form-data',
                         },
                     });
+                    console.log(response.data.user);
                 await AsyncStorage.setItem('user', JSON.stringify(response?.data?.user));
                 dispatch(setAuth(true));
                 dispatch(setUser(response?.data?.user));
@@ -209,12 +191,6 @@ const EditProfile = ({ navigation }) => {
                 </Camera>
             )}
             {loading && <Loader />}
-            <ConfirmationAlertMessage
-                visible={alertData.alertVisible}
-                message={alertData.alertMessage}
-                onPressNo={hideAlert}
-                onPressYes={handleConfirmation}
-            />
             <AlertMessage
                 visible={alertData2.alertVisible}
                 message={alertData2.alertMessage}
@@ -249,17 +225,14 @@ const EditProfile = ({ navigation }) => {
                         <Pressable style={styles.uploadPicture} onPress={() => setModalVisible(true)}>
                             <Text style={styles.uploadPictureText}>Upload Picture</Text>
                         </Pressable>
-                        {(user.profilePicture || selectedImage) && <Pressable onPress={() => handleAlert("Are you Sure?")}>
-                            <Text style={styles.removePictureText}>Remove your picture</Text>
-                        </Pressable>}
                     </View>
                 </View>
                 <View style={{ marginVertical: 25, marginHorizontal: 15 }}>
                     <View style={styles.inputContainer}>
-                        <Input placeholder='Enter Your Username' editProfile={true} edit={true} value={formData.name} editable={editable} onEditClick={editClickHandler} name='name' handleChange={handleChange} />
+                        <Input placeholder='Enter Your Username' editProfile={true} edit={true} value={formData.name} editable={editable} onEditClick={editClickHandler} name='name' handleChange={handleChange} canEdit={true} />
                     </View>
                     <View style={styles.inputContainer}>
-                        <Input placeholder='Enter Your Phone Number' editProfile={true} value={formData.phone} editable={false} defaultInput={"(+92)"} onEditClick={editClickHandler} name='phone' handleChange={handleChange} maxLength={10} inputMode='numeric' grey={true} />
+                        <Input placeholder='Enter Your Email Address' editProfile={true} value={formData.email} editable={false} grey={true} canEdit={false} />
                     </View>
                     <View style={styles.inputContainer}>
                         <Text style={styles.changePassText}>Want to change your password?</Text>

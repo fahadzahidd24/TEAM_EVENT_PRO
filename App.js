@@ -32,7 +32,7 @@ export default function App() {
             backgroundColor: globalColors.backgroundColor,
           }}
         >
-          <StatusBar backgroundColor={globalColors.backgroundColor} style='dark' />
+          <StatusBar backgroundColor={globalColors.buttonColor} style='light' />
           <NavigationContainer>
             <StackNavigation />
           </NavigationContainer>

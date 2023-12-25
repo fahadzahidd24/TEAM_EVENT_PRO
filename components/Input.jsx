@@ -5,7 +5,7 @@ import { globalColors } from '../styles/globalColors'
 import { Ionicons } from '@expo/vector-icons'
 import { Pressable } from 'react-native'
 
-const Input = ({ icon, placeholder, handleChange, secureTextEntry, eye, value, inputMode, defaultInput, maxLength, editProfile, edit, editable=true, name, onEditClick, grey }) => {
+const Input = ({ icon, canEdit, placeholder, handleChange, secureTextEntry, eye, value, inputMode, defaultInput, maxLength, editProfile, edit, editable = true, name, onEditClick, grey }) => {
     const [secureText, setSecureText] = useState(secureTextEntry);
     const [eyeIcon, setEyeIcon] = useState(eye ? 'eye-off' : '');
 
@@ -16,7 +16,7 @@ const Input = ({ icon, placeholder, handleChange, secureTextEntry, eye, value, i
     return (
         <View style={editProfile ? styles.containerWhite : styles.container}>
             <View style={styles.inner}>
-                <View style={styles.inputContainer}>
+                <View style={canEdit === false ? styles.inputContainer2 : styles.inputContainer}>
                     <Ionicons name={icon} size={25} color={globalColors.textColor} />
                     {defaultInput && (
                         <Text style={[editProfile ? styles.defaultInputWhite : styles.defaultInput, !editable && styles.greyColor]}>{defaultInput}</Text>
@@ -47,9 +47,9 @@ const Input = ({ icon, placeholder, handleChange, secureTextEntry, eye, value, i
 export default Input
 
 const styles = StyleSheet.create({
-    greyColor:{
+    greyColor: {
         color: "grey",
-    },  
+    },
     container: {
         backgroundColor: globalColors.buttonColor,
         borderRadius: 10,
@@ -88,6 +88,11 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         width: "70%",
+    },
+    inputContainer2: {
+        flexDirection: "row",
+        alignItems: "center",
+        width: "100%",
     },
     input: {
         color: globalColors.textColor,
@@ -129,7 +134,7 @@ const styles = StyleSheet.create({
         fontSize: 20
     },
     editInputText: {
-        fontSize: 20,
+        fontSize: 18,
         fontFamily: 'Poppins_600SemiBold',
         color: globalColors.buttonColor,
         width: "100%",
