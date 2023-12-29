@@ -75,7 +75,7 @@ const Signup = ({ navigation }) => {
           password: formData.password,
         }
         console.log(formData2);
-        await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/register`, formData2);
+        await axios.post(`https://teamevent-pro-backend.vercel.app/api/register`, formData2);
         navigation.navigate("Verification", { email: formData.email });
       } catch (error) {
         handleAlert(error?.response?.data?.message || error.message, true);

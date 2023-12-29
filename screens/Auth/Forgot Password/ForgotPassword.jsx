@@ -25,7 +25,7 @@ const Signup = ({ navigation }) => {
       return handleAlert("Please Enter Valid Email", true);
     setloading(true);
     try {
-      await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/forgotPassword`, { email: formData.email });
+      await axios.post(`https://teamevent-pro-backend.vercel.app/api/forgotPassword`, { email: formData.email });
       navigation.navigate('VerificationForgotPassword', { email: formData.email })
     } catch (error) {
       handleAlert(error?.response?.data?.message || error.message, true);

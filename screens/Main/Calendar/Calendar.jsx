@@ -38,7 +38,7 @@ const CalendarScreen = () => {
             dots: [vacation, massage, workout],
             marked: true,
           }}
-          markingType='multi-dot'
+          markingType='multi-period'
         ></Calendar>
       </View>
       <View>

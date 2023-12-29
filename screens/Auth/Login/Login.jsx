@@ -62,7 +62,7 @@ const Login = ({ navigation }) => {
         else {
             setloading(true);
             try {
-                const response = await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/login`, formData);
+                const response = await axios.post(`https://teamevent-pro-backend.vercel.app/api/login`, formData);
                 await AsyncStorage.setItem('token', response?.data?.token);
                 await AsyncStorage.setItem('user', JSON.stringify(response?.data?.user));
                 dispatch(setAuth(true));

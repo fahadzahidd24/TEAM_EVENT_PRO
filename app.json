@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "TEAM_EVENT_PRO",
-    "slug": "TEAM_EVENT_PRO",
+    "name": "TeamEvent Pro",
+    "slug": "teamevent-pro",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo.png",
+    "icon": "./assets/appIcon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/logo.png",
@@ -19,7 +19,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo.png",
+        "foregroundImage": "./assets/appIcon.png",
         "backgroundColor": "#2e323b"
       },
       "permissions": [
@@ -50,8 +50,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "9bbc0253-b8f4-4726-8602-e27d801c4f1d"
+        "projectId": "6f410670-8628-4bcf-b0bf-99cdb3d30a53"
       }
-    }
+    },
+    "owner": "fahadzahidd24"
   }
 }

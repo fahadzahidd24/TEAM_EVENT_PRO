@@ -2,12 +2,12 @@ import { Pressable, StyleSheet, Text } from 'react-native';
 import React from 'react';
 import { globalColors } from '../styles/globalColors';
 
-const Button = ({ onPress, children }) => {
+const Button = ({ onPress, children, background }) => {
   return (
     <Pressable
       style={({ pressed }) => [
         styles.container,
-        { opacity: pressed ? 0.7 : 1 }, // Opacity change on press
+        { opacity: pressed ? 0.7 : 1, backgroundColor: background ? background : globalColors.buttonColor, }, // Opacity change on press
       ]}
       onPress={onPress}
     >
@@ -21,7 +21,7 @@ export default Button;
 const styles = StyleSheet.create({
   container: {
     minWidth: '100%',
-    backgroundColor: globalColors.buttonColor,
+    // backgroundColor: globalColors.buttonColor,
     height: 62,
     borderRadius: 10,
     justifyContent: 'center',

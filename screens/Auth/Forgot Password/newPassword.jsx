@@ -66,7 +66,7 @@ const NewPassword = ({ navigation, route }) => {
                     email
                 }
                 console.log(formData2);
-                await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/newPassword`, formData2);
+                await axios.post(`https://teamevent-pro-backend.vercel.app/api/newPassword`, formData2);
                 navigation.navigate("Login");
             } catch (error) {
                 handleAlert(error?.response?.data?.message || error.message, true);

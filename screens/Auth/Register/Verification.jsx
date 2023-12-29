@@ -48,7 +48,7 @@ const Verification = ({ navigation, route }) => {
     const resendHandler = async() => {
         try {
             setloading(true);
-            const response = await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/resendOTP`, { email })
+            const response = await axios.post(`https://teamevent-pro-backend.vercel.app/api/resendOTP`, { email })
             if (response.status === 200) {
                 startTimer();
                 return;
@@ -69,7 +69,7 @@ const Verification = ({ navigation, route }) => {
             setloading(true);
             try {
                 console.log(value);
-                const response = await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/verifyOTP`, { email, otp: value.toString() })
+                const response = await axios.post(`https://teamevent-pro-backend.vercel.app/api/verifyOTP`, { email, otp: value.toString() })
                 if (response.status === 200) {
                     return navigation.replace('UserDetails', { email });
                 }

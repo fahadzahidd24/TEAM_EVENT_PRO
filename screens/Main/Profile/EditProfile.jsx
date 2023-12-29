@@ -149,7 +149,7 @@ const EditProfile = ({ navigation }) => {
                 formData2.append('password', formData.password);
                 formData2.append('CPassword', formData.CPassword);
 
-                const response = await axios.put(`${process.env.EXPO_PUBLIC_BASE_URL}/api/user/updateProfile`, formData2,
+                const response = await axios.put(`https://teamevent-pro-backend.vercel.app/api/user/updateProfile`, formData2,
                     {
                         headers: {
                             'Content-Type': 'multipart/form-data',
